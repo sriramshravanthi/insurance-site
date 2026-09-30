@@ -416,7 +416,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     });
   </script>
 
-  <style>
+  <style is:global>
+    /*
+      Global, not scoped: the results section below is built by innerHTML at
+      runtime (see the script above), and Astro can only attach its scoping
+      attribute to markup present in the static template — a scoped style
+      here would silently fail to match anything rendered after a form
+      submit. Class names below (.flag, .badge, .pill, etc.) were checked
+      against global.css when this page was built and don't collide.
+    */
     .tool {
       max-width: 860px;
       margin: 0 auto;
