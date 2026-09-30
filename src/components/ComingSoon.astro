@@ -1,0 +1,22 @@
+---
+interface Props {
+  title: string;
+  note?: string;
+}
+
+const { title, note } = Astro.props;
+---
+
+<div class="coming-soon">
+  <span class="badge-soon">Coming soon</span>
+  <h1>{title}</h1>
+  <p>
+    We haven't published verified content for this section yet. A fact only
+    goes on this site once it traces back to a primary source — a regulator,
+    government body, or an insurer's own published terms — with a source
+    link and a "last verified" date. Pages go live state by state and topic
+    by topic as that research is completed.
+  </p>
+  {note && <p>{note}</p>}
+  <p><a href="/">&larr; Back to Home</a></p>
+</div>

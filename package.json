@@ -1,0 +1,23 @@
+{
+  "name": "insurance-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "data:export": "node scripts/export-rules.mjs",
+    "predev": "npm run data:export",
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "npm run data:export",
+    "build": "astro build",
+    "preview": "astro preview",
+    "pretest": "npm run data:export",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "astro": "^7.3.5"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.2"
+  }
+}

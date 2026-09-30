@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadRulesIndex } from "../../lib/rulesData";
+
+const index = loadRulesIndex();
+const available = index.availability.home;
+const availableCodes = new Set(available.map((s) => s.code));
+const pending = index.states.filter((s) => !availableCodes.has(s.code));
+---
+
+<BaseLayout
+  title="Home Insurance"
+  description="Verified state-by-state homeowners insurance rules, checked against primary sources."
+>
+  <h1>Home Insurance</h1>
+  <p>
+    Select a state to see its verified home insurance rules. A rule appears
+    here only after it's traced to a primary source — a regulator,
+    government body, or an insurer's own published terms — with a source
+    link and a "last verified" date.
+  </p>
+
+  <h2>Available now</h2>
+  <ul class="state-grid">
+    {
+      available.map((s) => (
+        <li>
+          <a href={`/home-insurance/${s.code.toLowerCase()}/`}>{s.name}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <h2>Coming soon</h2>
+  <p>
+    These states have not been researched from primary sources yet, so
+    nothing is published for them.
+  </p>
+  <ul class="state-grid pending">
+    {pending.map((s) => <li>{s.name}</li>)}
+  </ul>
+</BaseLayout>

@@ -1,0 +1,53 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DraftNotice from "../components/DraftNotice.astro";
+---
+
+<BaseLayout
+  title="Privacy"
+  description="What this site does and does not collect."
+>
+  <DraftNotice
+    note="This Privacy page is a draft and has not yet been reviewed by an insurance-regulatory or privacy lawyer. It describes this site as it works today and will be updated if that changes."
+  />
+  <div class="prose">
+    <h1>Privacy</h1>
+
+    <p class="lead">
+      This site is currently built to collect as little as possible. This
+      page describes what actually happens today, not a general privacy
+      policy template.
+    </p>
+
+    <h2>What this site does not collect</h2>
+    <ul>
+      <li>No accounts or sign-ups</li>
+      <li>No lead forms or contact forms</li>
+      <li>No document or file uploads</li>
+      <li>No cookies, and nothing stored in your browser</li>
+      <li>No analytics or tracking of what you type or click</li>
+    </ul>
+
+    <h2>The Coverage Gap Checker and other tools</h2>
+    <p>
+      Numbers you type into a tool on this site — like the
+      <a href="/tools/">Coverage Gap Checker</a> — are used only in your
+      browser, on your device, to calculate the results you see. They are
+      never sent to a server, never saved, and never seen by us. Closing or
+      refreshing the page clears everything you entered.
+    </p>
+
+    <h2>If this changes</h2>
+    <p>
+      If we ever add something that does collect information — an account
+      system, a contact form, analytics, or a lead/referral feature — this
+      page will be updated first to describe exactly what's collected, why,
+      and how it's used, and that feature will go through legal review before
+      launch. See <a href="/how-we-make-money/">How We Make Money</a> for
+      what future features we might consider.
+    </p>
+
+    <h2>Questions</h2>
+    <p>[Contact details to be added once a legal entity and contact process are established.]</p>
+  </div>
+</BaseLayout>

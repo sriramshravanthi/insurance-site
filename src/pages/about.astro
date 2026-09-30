@@ -1,0 +1,68 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DraftNotice from "../components/DraftNotice.astro";
+---
+
+<BaseLayout
+  title="About"
+  description="About this insurance education and comparison project."
+>
+  <DraftNotice
+    note="This About page is a draft and has not yet been reviewed by an insurance-regulatory lawyer. Wording may change before this site is used publicly."
+  />
+  <div class="prose">
+    <h1>About this site</h1>
+
+    <p class="lead">
+      This site helps people understand and compare U.S. car and home
+      insurance. It is educational — it is not an insurance company, not a
+      licensed insurance agency or broker, and nothing here is a quote or an
+      offer to sell insurance.
+    </p>
+
+    <h2>What we do</h2>
+    <p>
+      We research car and home insurance rules state by state, tracing each
+      one back to a regulator, a government body, or an insurer's own
+      published terms. A rule is only published on this site once it's been
+      verified that way — see the <a href="/auto-insurance/">auto</a> and
+      <a href="/home-insurance/">home</a> pages for what's been verified so
+      far. We also publish plain-language guides on how insurance pricing and
+      coverage generally work (see <a href="/learn/">Learn</a>), and tools
+      like the <a href="/tools/">Coverage Gap Checker</a> that compare the
+      numbers you enter against those verified rules.
+    </p>
+
+    <h2>What we don't do, for now</h2>
+    <p>
+      This site does not collect leads, does not create accounts, does not
+      ask you to upload documents, and does not provide actual insurance
+      quotes. Nothing you type into a tool here is saved or sent anywhere —
+      see our <a href="/privacy/">Privacy</a> page. Any future referral,
+      lead-generation, or advertising features would only launch after legal
+      review, and would be clearly disclosed — see
+      <a href="/how-we-make-money/">How We Make Money</a>.
+    </p>
+
+    <h2>How we decide what to publish</h2>
+    <p>
+      Every fact we publish carries a source link and a "last verified" date.
+      Facts that come from a secondary source, that conflict between sources,
+      or that haven't been researched yet are kept out of public pages —
+      they're tracked internally as research to-do items, not shown as fact.
+      If a state or topic isn't covered yet, the page says "Coming soon"
+      instead of guessing.
+    </p>
+
+    <h2>What this site is not</h2>
+    <ul>
+      <li>Not an insurance company, agent, or broker</li>
+      <li>Not a source of legal, financial, or insurance advice</li>
+      <li>Not a quote — any numbers shown are educational estimates or reference data, clearly labeled as such</li>
+    </ul>
+    <p>
+      Always confirm anything important with your insurer or a licensed
+      insurance professional before making a coverage decision.
+    </p>
+  </div>
+</BaseLayout>

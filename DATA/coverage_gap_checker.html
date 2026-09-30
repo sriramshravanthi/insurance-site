@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coverage Gap Checker - Car and Home Insurance</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1c2430;--muted:#5b6675;--line:#d9dee6;--accent:#1f4e8c;--below:#a4262c;--gap:#b25a00;--watch:#8a6d00;--info:#1f5f99;--ok:#1f7a45;}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212b;--ink:#e7ebf1;--muted:#a3adba;--line:#2e3744;--accent:#7db2ee;--below:#ff8a8f;--gap:#ffb266;--watch:#e6cc66;--info:#83bdf2;--ok:#7fd8a0;}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}
+h2{font-size:1.15rem;margin:1.2em 0 .4em}
+.lead{color:var(--muted);margin:.2em 0 1em}
+.notice{border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--card);padding:12px 14px;border-radius:8px;font-size:.92rem}
+.tabs{display:flex;gap:8px;margin:16px 0}
+.tabs button{flex:1;padding:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;font-size:1rem;cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--accent);outline:2px solid var(--accent);font-weight:600}
+form{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+fieldset{border:0;margin:0 0 10px;padding:0}
+legend{font-weight:600;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:620px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:.9rem;font-weight:600;margin-bottom:3px}
+.hint{display:block;font-weight:400;color:var(--muted);font-size:.82rem}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-size:1rem}
+input:focus,select:focus,button:focus{outline:3px solid var(--accent);outline-offset:1px}
+.actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:11px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:1rem;cursor:pointer}
+@media (prefers-color-scheme:dark){.btn{color:#0b1220}}
+.btn.secondary{background:transparent;color:var(--accent)}
+.hidden{display:none}
+.summary{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.85rem;background:var(--card)}
+.flag{background:var(--card);border:1px solid var(--line);border-left-width:6px;border-radius:8px;padding:12px 14px;margin:10px 0}
+.flag.below{border-left-color:var(--below)}.flag.gap{border-left-color:var(--gap)}.flag.watch{border-left-color:var(--watch)}.flag.info{border-left-color:var(--info)}.flag.ok{border-left-color:var(--ok)}
+.badge{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;padding:2px 8px;border-radius:4px;border:1px solid currentColor;margin-bottom:4px}
+.below .badge{color:var(--below)}.gap .badge{color:var(--gap)}.watch .badge{color:var(--watch)}.info .badge{color:var(--info)}.ok .badge{color:var(--ok)}
+.flag h3{margin:.1em 0 .3em;font-size:1.02rem}
+.flag p{margin:.25em 0;font-size:.93rem}
+.lbl{font-weight:600}
+.srcs{font-size:.82rem;color:var(--muted);margin-top:6px}
+.srcs a{color:var(--accent)}
+.status{font-size:.75rem;border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-left:4px}
+.status.sec{border-color:var(--watch);color:var(--watch)}
+ul.q{padding-left:1.2em}
+ul.q li{margin:.3em 0}
+footer{font-size:.82rem;color:var(--muted);margin:24px 0}
+@media print{.tabs,form,.actions{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Coverage Gap Checker</h1>
+  <p class="lead">Enter numbers from your declarations page to see where your car or home coverage may differ from state rules or common gaps. Covers California, Texas, Florida and New York (auto) and California, Texas and Florida (home).</p>
+  <div class="notice" role="note">
+    <strong>Educational tool, not insurance advice, not a quote, and not a coverage decision.</strong>
+    It compares what you type with rules we checked on <span id="verified"></span> and cannot see your actual policy. Your insurer's policy language controls. Nothing you enter leaves your device; nothing is saved. Confirm anything important with your insurer or a licensed professional.
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Insurance type">
+    <button role="tab" id="tab-auto" aria-selected="true" aria-controls="panel-auto">Car insurance</button>
+    <button role="tab" id="tab-home" aria-selected="false" aria-controls="panel-home">Home insurance</button>
+  </div>
+
+  <section id="panel-auto" role="tabpanel" aria-labelledby="tab-auto">
+    <form id="form-auto" novalidate>
+      <fieldset><legend>Where and what</legend>
+        <div class="grid">
+          <div><label for="a-state">State</label>
+            <select id="a-state"><option value="CA">California</option><option value="TX">Texas</option><option value="FL">Florida</option><option value="NY">New York</option></select></div>
+          <div><label for="a-financed">Is the car financed or leased?</label>
+            <select id="a-financed"><option value="no">No</option><option value="yes">Yes</option></select></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Liability limits (in dollars)</legend>
+        <div class="grid">
+          <div><label for="a-bipp">Injury, per person<span class="hint">e.g. 30000</span></label><input id="a-bipp" inputmode="numeric" placeholder="30000"></div>
+          <div><label for="a-bipa">Injury, per accident<span class="hint">e.g. 60000</span></label><input id="a-bipa" inputmode="numeric" placeholder="60000"></div>
+          <div><label for="a-pd">Property damage<span class="hint">e.g. 15000</span></label><input id="a-pd" inputmode="numeric" placeholder="15000"></div>
+          <div><label for="a-assets">Assets you want to protect<span class="hint">Optional: home equity, savings, investments</span></label><input id="a-assets" inputmode="numeric" placeholder="250000"></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Other coverages</legend>
+        <div class="grid">
+          <div><label for="a-um">Uninsured/underinsured motorist</label>
+            <select id="a-um"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label for="a-pip">Injury coverage for you<span class="hint">PIP / no-fault / medical payments</span></label>
+            <select id="a-pip"><option value="unsure">Not sure</option><option value="pip">PIP or no-fault</option><option value="medpay">Medical payments only</option><option value="none">None</option></select></div>
+          <div><label for="a-coll">Collision</label>
+            <select id="a-coll"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label for="a-comp">Comprehensive</label>
+            <select id="a-comp"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label for="a-value">Vehicle value<span class="hint">Optional</span></label><input id="a-value" inputmode="numeric" placeholder="18000"></div>
+          <div><label for="a-ded">Collision deductible<span class="hint">Optional</span></label><input id="a-ded" inputmode="numeric" placeholder="500"></div>
+        </div>
+      </fieldset>
+      <div class="actions"><button class="btn" type="submit">Check for gaps</button><button class="btn secondary" type="reset" id="reset-auto">Reset</button></div>
+    </form>
+  </section>
+
+  <section id="panel-home" role="tabpanel" aria-labelledby="tab-home" class="hidden">
+    <form id="form-home" novalidate>
+      <fieldset><legend>Where and how it is insured</legend>
+        <div class="grid">
+          <div><label for="h-state">State</label>
+            <select id="h-state"><option value="CA">California</option><option value="TX">Texas</option><option value="FL">Florida</option></select></div>
+          <div><label for="h-pool">Insured through a state-backed plan?</label>
+            <select id="h-pool"></select></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Limits and deductibles (in dollars)</legend>
+        <div class="grid">
+          <div><label for="h-dwelling">Dwelling limit (Coverage A)</label><input id="h-dwelling" inputmode="numeric" placeholder="800000"></div>
+          <div><label for="h-rebuild">Your estimate to rebuild<span class="hint">Optional. Not the market value or purchase price.</span></label><input id="h-rebuild" inputmode="numeric" placeholder="900000"></div>
+          <div><label for="h-settle">Policy pays</label>
+            <select id="h-settle"><option value="unsure">Not sure</option><option value="rc">Replacement cost</option><option value="acv">Actual cash value</option></select></div>
+          <div><label for="h-contents">Personal property limit</label><input id="h-contents" inputmode="numeric" placeholder="400000"></div>
+          <div><label for="h-liab">Personal liability limit</label><input id="h-liab" inputmode="numeric" placeholder="300000"></div>
+          <div><label for="h-ded">Main deductible</label><input id="h-ded" inputmode="numeric" placeholder="2500"></div>
+          <div><label for="h-assets">Assets you want to protect<span class="hint">Optional</span></label><input id="h-assets" inputmode="numeric" placeholder="1000000"></div>
+          <div><label for="h-umb">Do you have an umbrella policy?</label>
+            <select id="h-umb"><option value="no">No</option><option value="yes">Yes</option></select></div>
+        </div>
+      </fieldset>
+      <fieldset><legend>Flood and other perils</legend>
+        <div class="grid">
+          <div><label for="h-flood">Flood insurance</label>
+            <select id="h-flood"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div><label for="h-zone">In a FEMA high-risk flood zone?</label>
+            <select id="h-zone"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div id="wrap-quake"><label for="h-quake">Earthquake insurance</label>
+            <select id="h-quake"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div id="wrap-wind" class="hidden"><label for="h-wind">Hurricane or wind/hail deductible, percent<span class="hint">Optional, e.g. 2 for 2%</span></label><input id="h-wind" inputmode="decimal" placeholder="2"></div>
+          <div id="wrap-twia" class="hidden"><label for="h-twia">Home in the TWIA coastal area?</label>
+            <select id="h-twia"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div id="wrap-windcov" class="hidden"><label for="h-windcov">Wind and hail coverage</label>
+            <select id="h-windcov"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+        </div>
+      </fieldset>
+      <div class="actions"><button class="btn" type="submit">Check for gaps</button><button class="btn secondary" type="reset" id="reset-home">Reset</button></div>
+    </form>
+  </section>
+
+  <section id="results" aria-live="polite" tabindex="-1"></section>
+
+  <footer>
+    Levels: <strong>Below a legal minimum</strong> = a number you entered is under a state requirement we checked. <strong>Likely gap</strong> = a common uncovered risk or program condition, not a legal minimum. <strong>Worth checking</strong> and <strong>For your information</strong> are prompts, not conclusions. Each item lists its source and whether that source is a regulator or statute ("Primary source") or a secondary source we could not confirm. Rules change; this tool reflects sources checked on <span id="verified2"></span>. This tool does not rate risk, recommend a company, or compare prices.
+  </footer>
+</div>
+
+<script>
+/* Coverage-gap checker logic. Pure functions: no DOM, no network, nothing stored.
+   Every rule cites a source and carries that source's verification status from the reference workbook. */
+var LAST_VERIFIED = "2026-09-30";
+var SRC = {
+  cdi101:   {name: "CA Dept of Insurance - Auto insurance guide (Form 101)", url: "https://www.insurance.ca.gov/01-consumers/105-type/95-guides/01-auto/auto101.cfm", status: "Primary source"},
+  cadmv:    {name: "CA DMV - Auto insurance requirements", url: "https://www.dmv.ca.gov/portal/vehicle-registration/insurance-requirements/", status: "Primary source"},
+  tdi:      {name: "Texas Dept of Insurance - Auto insurance guide (CB020)", url: "https://www.tdi.texas.gov/pubs/consumer/cb020.html", status: "Primary source"},
+  flhsmv:   {name: "Florida DHSMV - Florida insurance requirements", url: "https://www.flhsmv.gov/insurance/", status: "Primary source"},
+  nydfs:    {name: "NY Dept of Financial Services - Auto insurance guide", url: "https://www.dfs.ny.gov/consumers/auto_insurance/Auto_resource_center", status: "Primary source"},
+  cdi401:   {name: "CA Dept of Insurance - Homeowners and renters guide (Form 401)", url: "https://www.insurance.ca.gov/01-consumers/105-type/95-guides/03-res/res-ins-guide.cfm", status: "Primary source"},
+  cdieq:    {name: "CA Dept of Insurance - Earthquake insurance", url: "https://www.insurance.ca.gov/01-consumers/105-type/95-guides/03-res/eq-ins.cfm", status: "Primary source"},
+  cdiflood: {name: "CA Dept of Insurance - Flood insurance resources", url: "https://www.insurance.ca.gov/01-consumers/140-catastrophes/FloodFacts.cfm", status: "Primary source"},
+  cea:      {name: "California Earthquake Authority - Homeowners policies", url: "https://www.earthquakeauthority.com/california-earthquake-insurance-policies/homeowners", status: "Primary source"},
+  tdihome:  {name: "Texas Dept of Insurance - Home insurance guide (CB025)", url: "https://www.tdi.texas.gov/pubs/consumer/cb025.html", status: "Primary source"},
+  tdiblog:  {name: "Texas Dept of Insurance - Home and property blog", url: "https://tdi.texas.gov/blog/category/home-property.html", status: "Primary source"},
+  twia:     {name: "TWIA - Flood insurance requirements", url: "https://www.twia.org/flood-requirement/", status: "Primary source"},
+  fldfs:    {name: "Florida DFS - Florida's hurricane deductible", url: "https://www.myfloridacfo.com/division/consumers/consumerprotections/floridashurricanedeductible", status: "Primary source"},
+  fl627:    {name: "Florida Statutes 627.701 - deductibles", url: "https://codes.findlaw.com/fl/title-xxxvii-insurance/fl-st-sect-627-701/", status: "Primary source"},
+  citflood: {name: "Coverage Classroom - Citizens flood requirement phase-in (quotes s. 627.351(6)(aa))", url: "https://coverageclassroom.com/learn/citizens-flood-insurance-requirement", status: "Secondary - unverified"}
+};
+
+var AUTO = {
+  CA: {name: "California", min: {bipp: 30000, bipa: 60000, pd: 15000}, pipRequired: false,
+       guide: "cdi101", minSrc: ["cadmv", "cdi101"], liabNote: "cdi101"},
+  TX: {name: "Texas", min: {bipp: 30000, bipa: 60000, pd: 25000}, pipRequired: false,
+       guide: "tdi", minSrc: ["tdi"], liabNote: "tdi"},
+  NY: {name: "New York", min: {bipp: 25000, bipa: 50000, pd: 10000}, pipRequired: true, pipAmount: 50000,
+       guide: "nydfs", minSrc: ["nydfs"], liabNote: "nydfs"},
+  FL: {name: "Florida", min: {bipp: null, bipa: null, pd: 10000}, pipRequired: true, pipAmount: 10000,
+       guide: "flhsmv", minSrc: ["flhsmv"], liabNote: null}
+};
+
+function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+function isNum(x) { return typeof x === "number" && isFinite(x); }
+
+function autoCheck(v) {
+  var st = AUTO[v.state]; var f = [];
+  function add(level, title, what, why, check, cites) { f.push({level: level, title: title, what: what, why: why, check: check, cites: cites || []}); }
+  if (!st) return f;
+
+  // 1. Minimum liability
+  if (v.state === "FL") {
+    if (isNum(v.pd) && v.pd < st.min.pd) {
+      add("below", "Property damage liability below Florida's requirement",
+        "You entered " + money(v.pd) + "; Florida requires at least " + money(st.min.pd) + " of property damage liability to register a vehicle.",
+        "Florida requires PIP and property damage liability for vehicles with four or more wheels.",
+        "Check your declarations page for the property damage limit.", ["flhsmv"]);
+    } else if (isNum(v.pd)) {
+      add("ok", "Property damage liability meets Florida's requirement", "You entered " + money(v.pd) + " against a " + money(st.min.pd) + " requirement.", "", "", ["flhsmv"]);
+    }
+    if (!isNum(v.bipp) || v.bipp === 0) {
+      add("watch", "No bodily injury liability entered",
+        "Florida does not require bodily injury liability for most private vehicles, so having none can be legal.",
+        "If you cause a crash that injures someone, you could be personally responsible for their injuries, and a crash can trigger a requirement to prove 10/20 bodily injury coverage after the fact.",
+        "Ask your insurer what bodily injury liability would cost and what limits fit the assets you want to protect.", ["flhsmv"]);
+    }
+  } else {
+    var below = [];
+    if (isNum(v.bipp) && v.bipp < st.min.bipp) below.push("injury per person " + money(v.bipp) + " (minimum " + money(st.min.bipp) + ")");
+    if (isNum(v.bipa) && v.bipa < st.min.bipa) below.push("injury per accident " + money(v.bipa) + " (minimum " + money(st.min.bipa) + ")");
+    if (isNum(v.pd) && v.pd < st.min.pd) below.push("property damage " + money(v.pd) + " (minimum " + money(st.min.pd) + ")");
+    if (below.length) {
+      add("below", "Liability limits below the " + st.name + " minimum",
+        "Below the minimum: " + below.join("; ") + ".",
+        st.name + " sets minimum liability limits of " + money(st.min.bipp) + "/" + money(st.min.bipa) + "/" + money(st.min.pd) + ".",
+        "Check the declarations page. Some states change minimums on set dates, so an older policy may need updating at renewal.", st.minSrc);
+    } else if (isNum(v.bipp) && isNum(v.bipa) && isNum(v.pd)) {
+      var nyNote = v.state === "NY" ? " New York also has higher required limits when an injury results in death ($50,000 per person, $100,000 per accident); this tool only checks the non-death limits." : "";
+      add("ok", "Liability limits meet the " + st.name + " minimums", "You entered " + money(v.bipp) + "/" + money(v.bipa) + "/" + money(v.pd) + "." + nyNote, "", "", st.minSrc);
+    } else {
+      add("info", "Enter your liability limits", "Fill in the three liability numbers to check them against the state minimum.", "", "", []);
+    }
+  }
+
+  // 2. Property damage at the minimum
+  if (isNum(v.pd) && st.min.pd && v.pd === st.min.pd) {
+    var pdCite = v.state === "NY" ? ["nydfs"] : v.state === "TX" ? ["tdi"] : [];
+    add("info", "Property damage limit is at the state minimum",
+      "Your limit is " + money(v.pd) + ". If you damage someone's newer car, the repair or replacement cost can exceed this and the difference is your responsibility.",
+      v.state === "NY" ? "New York DFS notes many cars today are worth far more than the $10,000 minimum." :
+      v.state === "TX" ? "TDI notes minimum limits might be too low if the other driver's car is totaled." :
+      "General consideration; not taken from a state rule.",
+      "Ask what a higher property damage limit would cost.", pdCite);
+  }
+
+  // 3. Assets vs. injury liability limit
+  if (isNum(v.assets) && v.assets > 0 && isNum(v.bipa) && v.bipa > 0 && v.assets > v.bipa) {
+    add("watch", "Injury liability limit is lower than the assets you want to protect",
+      "Your per-accident injury limit is " + money(v.bipa) + " and you listed " + money(v.assets) + " of assets.",
+      st.liabNote === "cdi101" ? "CDI says the more assets you have, the more you could lose in a lawsuit, and you may want higher limits than the law requires." :
+      st.liabNote === "nydfs" ? "New York DFS says consumers with assets to protect should seriously consider higher bodily injury limits." :
+      st.liabNote === "tdi" ? "TDI says if you lack enough liability coverage you might pay the rest out of pocket and the other driver could sue you." :
+      "General consideration; not taken from a Florida rule.",
+      "Ask about higher liability limits and about an umbrella policy, which adds liability coverage above your auto and home policies.", st.liabNote ? [st.liabNote] : []);
+  }
+
+  // 4. Uninsured / underinsured motorist
+  if (v.um === "no") {
+    if (v.state === "NY") {
+      add("below", "New York requires uninsured motorist coverage", "You answered that you do not carry it.", "New York requires uninsured motorist bodily injury coverage at the same minimum limits as liability, for accidents in New York.", "Check your declarations page or ask your insurer.", ["nydfs"]);
+    } else if (v.state === "CA" || v.state === "TX") {
+      add("watch", "No uninsured/underinsured motorist coverage",
+        "You answered that you do not carry it.",
+        v.state === "CA" ? "California insurers must offer it; you can decline only by signing a waiver. It pays for injuries when the at-fault driver has no insurance or too little." :
+        "Texas insurers must offer it; declining requires a written rejection. It pays when you are hit by a driver without insurance or without enough.",
+        "Ask whether you signed a rejection and what adding it would cost.", [st.guide]);
+    } else {
+      add("info", "Uninsured motorist coverage: not researched for Florida", "This tool has not verified Florida's rules on this coverage.", "", "Ask your insurer what is offered.", []);
+    }
+  } else if (v.um === "unsure") {
+    add("info", "Find out whether you carry uninsured/underinsured motorist coverage", "You were not sure.", "It pays your injuries when the at-fault driver is uninsured or underinsured.", "Look for it on your declarations page.", v.state === "FL" ? [] : [st.guide]);
+  }
+
+  // 5. PIP / no-fault
+  if (v.state === "NY" && v.pip !== "pip") {
+    add(v.pip === "unsure" ? "watch" : "below", "New York requires basic no-fault (PIP) of $50,000",
+      v.pip === "unsure" ? "You were not sure whether you have it." : "You answered that you do not have PIP/no-fault coverage.",
+      "New York requires $50,000 of basic no-fault coverage.", "Check your declarations page.", ["nydfs"]);
+  }
+  if (v.state === "FL" && v.pip !== "pip") {
+    add(v.pip === "unsure" ? "watch" : "below", "Florida requires $10,000 of PIP",
+      v.pip === "unsure" ? "You were not sure whether you have it." : "You answered that you do not have PIP.",
+      "Florida requires PIP and property damage liability to register a vehicle; PIP pays 80% of necessary medical expenses up to $10,000 regardless of fault.", "Check your declarations page.", ["flhsmv"]);
+  }
+  if (v.state === "TX" && v.pip === "none") {
+    add("info", "No PIP on your policy",
+      "In Texas, auto policies include PIP unless the insured rejects it in writing.",
+      "TDI says all Texas auto policies include PIP and the insured must reject it in writing.", "Confirm whether you signed a rejection.", ["tdi"]);
+  }
+
+  // 6. Collision/comprehensive and lenders
+  if (v.financed === "yes" && (v.coll === "no" || v.comp === "no")) {
+    add("watch", "Financed or leased vehicle without collision and comprehensive",
+      "You answered that the vehicle is financed or leased and that you lack " + (v.coll === "no" && v.comp === "no" ? "collision and comprehensive" : v.coll === "no" ? "collision" : "comprehensive") + " coverage.",
+      "Lenders and lessors typically require both; if you cancel or lose them the lender may buy expensive coverage that protects only the lender.",
+      "Check your loan or lease terms and ask your lender.", ["tdi", "cdi101"].filter(function (k) { return k === st.guide || k === "tdi" && v.state === "TX" || k === "cdi101" && v.state === "CA"; }));
+  }
+
+  // 7. Deductible vs vehicle value; older car note
+  if ((v.coll === "yes") && isNum(v.vehicleValue) && v.vehicleValue > 0 && isNum(v.deductible) && v.deductible >= 0.5 * v.vehicleValue) {
+    add("info", "Collision deductible is at least half of the vehicle's value",
+      "Deductible " + money(v.deductible) + " against a vehicle value of " + money(v.vehicleValue) + ".",
+      "Collision pays up to the car's value minus the deductible, so for a total loss the most you would receive is " + money(Math.max(0, v.vehicleValue - v.deductible)) + ".",
+      "Compare the premium for this coverage with that maximum payout.", []);
+  }
+  if ((v.coll === "yes" || v.comp === "yes") && v.financed === "no" && isNum(v.vehicleValue) && v.vehicleValue > 0 && v.vehicleValue < 3000) {
+    add("info", "Collision or comprehensive on a lower-value vehicle",
+      "Your vehicle is valued at " + money(v.vehicleValue) + ".",
+      v.state === "NY" ? "New York DFS says you may reduce costs by raising deductibles or eliminating physical damage coverage on older vehicles." :
+      v.state === "CA" ? "CDI suggests thinking about dropping comprehensive and/or collision on an older car." : "General consideration.",
+      "Weigh the premium against what the coverage could pay. This is a choice, not a requirement.", v.state === "NY" ? ["nydfs"] : v.state === "CA" ? ["cdi101"] : []);
+  }
+  return f;
+}
+
+var AUTO_QUESTIONS = {
+  CA: ["Do I qualify for a Good Driver policy (licensed 3+ years, no more than one point, and other criteria)? California requires it to be at least 20% below the non-good-driver rate.",
+       "I am 55 or older: does completing a DMV-approved mature driver course reduce my premium, and by how much?",
+       "Is my quote a six-month or annual premium? In California a six-month premium must be half the annual premium, with no paid-in-full discount.",
+       "Are there mileage-verification programs that lower my premium?"],
+  TX: ["Which discounts do you offer and how much is each? (Each company decides.)",
+       "Do you use my credit score, and how does it affect my price?",
+       "Did I sign a written rejection for PIP or uninsured/underinsured coverage, and what would adding them cost?",
+       "If you cancel or do not renew, what notice will I get and why?"],
+  NY: ["Which of the required discounts (accident prevention course, anti-lock brakes, daytime running lamps, anti-theft) are applied, and where are the dollar amounts on my declarations page?",
+       "What would Additional PIP or OBEL cost, and do I want Supplementary Uninsured/Underinsured (SUM) coverage at my liability limits?",
+       "Is supplemental spousal liability included, and do I want it?",
+       "How does your surcharge plan treat my accidents and violations?"],
+  FL: ["What would bodily injury liability cost at different limits?",
+       "Which driver-improvement or safety-course discounts do you offer?",
+       "Do you use my credit information, and what notice will I receive?",
+       "If you cancel, what notice will I get and how do I appeal to the state?"]
+};
+
+var HOME = {
+  CA: {name: "California"}, TX: {name: "Texas"}, FL: {name: "Florida"}
+};
+
+function homeCheck(v) {
+  var f = [];
+  function add(level, title, what, why, check, cites) { f.push({level: level, title: title, what: what, why: why, check: check, cites: cites || []}); }
+  var st = v.state;
+  var guide = st === "CA" ? ["cdi401"] : st === "TX" ? ["tdihome"] : [];
+
+  // 1. Dwelling vs rebuild cost
+  if (isNum(v.dwelling) && isNum(v.rebuild) && v.rebuild > 0) {
+    var ratio = v.dwelling / v.rebuild;
+    if (ratio < 1) {
+      add("watch", "Dwelling limit is below your estimated rebuild cost",
+        "Your dwelling limit " + money(v.dwelling) + " is " + Math.round(ratio * 100) + "% of your estimate of " + money(v.rebuild) + " (a gap of " + money(v.rebuild - v.dwelling) + ").",
+        st === "CA" ? "CDI says the dwelling limit should be the cost to rebuild, not the purchase price or market value, and that underinsurance and code-upgrade costs were major problems after past wildfires." :
+        "The dwelling limit is meant to reflect what it would cost to rebuild. This is a general consideration; the estimate is yours, not an insurer's.",
+        "Ask your insurer how its rebuild estimate was produced and whether building-code upgrade coverage is included.", guide);
+    } else {
+      add("ok", "Dwelling limit meets your rebuild estimate", "Your limit " + money(v.dwelling) + " against your estimate of " + money(v.rebuild) + ".", "This only reflects the estimate you entered.", "Update the estimate when you renovate or costs change.", guide);
+    }
+  } else if (isNum(v.dwelling)) {
+    add("info", "Add a rebuild-cost estimate to check your dwelling limit", "Without an estimate this tool cannot compare your limit with the cost to rebuild.",
+      st === "CA" ? "CDI says insurers and brokers must give a written copy of any replacement cost estimate they provide to an applicant who buys." : "",
+      "Ask a local builder for current cost per square foot, or ask your insurer for its estimate in writing.", st === "CA" ? ["cdi401"] : []);
+  }
+
+  // 2. Actual cash value
+  if (v.settlement === "acv") {
+    add("watch", "Actual cash value settlement",
+      "Your policy pays actual cash value.",
+      st === "TX" ? "TDI says actual cash value coverage pays replacement cost minus depreciation and costs less but pays less." :
+      st === "CA" ? "CDI defines actual cash value for a structure loss as the lesser of the limit or fair market value, or repair cost less depreciation for a partial loss." :
+      "Actual cash value pays replacement cost minus depreciation.",
+      "Ask what replacement cost coverage would cost and whether any roof-specific settlement rules apply.", st === "TX" ? ["tdihome"] : st === "CA" ? ["cdi401"] : []);
+  } else if (v.settlement === "unsure") {
+    add("info", "Find out whether your policy pays replacement cost or actual cash value", "You were not sure.", "The difference can change what a claim pays.", "Look on your declarations page or ask your insurer.", guide);
+  }
+
+  // 3. Contents
+  if (isNum(v.dwelling) && v.dwelling > 0 && isNum(v.contents)) {
+    var pct = v.contents / v.dwelling;
+    if (st === "CA" && (pct < 0.3 || pct > 0.7)) {
+      add("info", "Personal property limit compared with the usual guideline",
+        "Your contents limit is " + Math.round(pct * 100) + "% of your dwelling limit.",
+        "CDI says the contents limit is generally around 50% of the dwelling amount, but it is only a guideline; your own inventory is the reliable measure, and special limits apply to items like jewelry and firearms.",
+        "Keep a home inventory and ask about scheduling high-value items.", ["cdi401"]);
+    }
+  }
+
+  // 4. Liability vs assets; umbrella
+  if (isNum(v.assets) && v.assets > 0 && isNum(v.liability) && v.liability > 0 && v.assets > v.liability && v.umbrella !== "yes") {
+    add("watch", "Home liability limit is lower than your assets and you have no umbrella",
+      "Liability limit " + money(v.liability) + "; assets you want to protect " + money(v.assets) + ".",
+      st === "TX" ? "TDI says home policy liability coverage is limited and a separate umbrella policy can add more." : "General consideration; umbrella policies add liability coverage above home and auto policies.",
+      "Ask about a higher home liability limit or an umbrella. Umbrella insurers often require certain underlying limits.", st === "TX" ? ["tdihome"] : []);
+  }
+
+  // 5. Flood
+  var flood = v.flood, zone = v.zone;
+  if (flood !== "yes") {
+    if (zone === "yes") {
+      add("gap", "In a high-risk flood zone without flood insurance",
+        "You said your home is in a federally mapped high-risk flood zone and that you " + (flood === "no" ? "do not have" : "are not sure you have") + " flood insurance.",
+        "Homeowners policies generally exclude flood. Lenders require flood insurance in federally mapped high-risk zones, and NFIP policies usually take effect 30 days after purchase.",
+        "Confirm your zone on the FEMA map, ask your lender, and compare NFIP and private flood quotes.", st === "CA" ? ["cdi401", "cdiflood"] : st === "TX" ? ["tdihome", "tdiblog"] : []);
+    } else {
+      add("watch", "No flood coverage",
+        "You " + (flood === "no" ? "do not have" : "are not sure you have") + " flood insurance.",
+        st === "CA" ? "CDI says standard homeowners policies do not cover flood and the FAIR Plan does not cover storm damage unless a difference-in-conditions policy is added." :
+        st === "TX" ? "TDI says home insurance does not cover flood; a separate flood policy is needed." : "Homeowners policies exclude flood.",
+        "Check your flood risk on the FEMA map. Flood damage often occurs outside mapped high-risk zones.", st === "CA" ? ["cdiflood"] : st === "TX" ? ["tdihome"] : []);
+    }
+  }
+
+  // 6. California earthquake
+  if (st === "CA") {
+    if (v.quake !== "yes") {
+      var ded = isNum(v.dwelling) ? " For example, a 15% earthquake deductible on your dwelling limit would be " + money(v.dwelling * 0.15) + "." : "";
+      add("watch", "No earthquake coverage",
+        "You " + (v.quake === "no" ? "do not have" : "are not sure you have") + " earthquake insurance.",
+        "California homeowners policies do not cover earthquake damage (except fire that follows). Insurers must offer it; CEA deductibles range from 5% to 25% of dwelling coverage." + ded,
+        "Ask about CEA and other earthquake options and how the deductible would work for your home.", ["cdieq", "cea"]);
+    } else if (isNum(v.dwelling)) {
+      add("info", "Earthquake deductible in dollars",
+        "CEA deductibles are 5%, 10%, 15%, 20% or 25% of dwelling coverage. On your limit that is " + money(v.dwelling * 0.05) + " to " + money(v.dwelling * 0.25) + ".",
+        "Earthquake deductibles are percentages, so they can be large.", "Check which percentage your policy uses and whether that amount is workable.", ["cea"]);
+    }
+  }
+
+  // 7. Wind / hurricane deductible
+  if ((st === "FL" || st === "TX") && isNum(v.windPct) && v.windPct > 0 && isNum(v.dwelling)) {
+    var dollars = v.dwelling * v.windPct / 100;
+    add("info", (st === "FL" ? "Hurricane" : "Wind/hail") + " deductible in dollars",
+      "A " + v.windPct + "% deductible on your dwelling limit is " + money(dollars) + " before the insurer pays for that loss.",
+      st === "FL" ? "Florida insurers must offer $500, 2%, 5% and 10% hurricane deductibles; it is separate from the regular deductible and applies once per year with the same insurer group." : "Wind and hail deductibles are commonly a percentage of the dwelling limit (policy practice, not a statute).",
+      "Confirm the percentage on your declarations page and think about whether you could cover that amount.", st === "FL" ? ["fl627", "fldfs"] : []);
+  }
+
+  // 8. Texas coast
+  if (st === "TX" && v.twiaArea === "yes" && v.wind !== "yes") {
+    add("gap", "Coastal Texas home without confirmed wind and hail coverage",
+      "You said your home is in the TWIA area and that you " + (v.wind === "no" ? "do not have" : "are not sure you have") + " wind and hail coverage.",
+      "TDI says home policies on the Texas coast may not cover wind and hail; TWIA sells it. Once a named storm enters the Gulf, most insurers including TWIA stop selling new policies or making changes, and TWIA may require a flood policy or an inspection first.",
+      "Ask your agent about wind and hail coverage now, not during storm season.", ["tdihome", "tdiblog", "twia"]);
+  }
+
+  // 9. State-backed plans
+  if (v.pool && v.pool !== "none") {
+    if (v.pool === "fair" && st === "CA") {
+      add("watch", "FAIR Plan policy: check what is missing",
+        "You told us your home is insured through the California FAIR Plan.",
+        "CDI says the FAIR Plan offers a standard fire policy for the structure and contents with limits, and no liability or coverage for other perils such as burglary. CDI suggests considering a difference-in-conditions or other supplemental policy from a private insurer.",
+        "Ask an agent or broker which supplemental coverage fills the gaps, and whether private options exist for your area.", ["cdi401", "cdiflood"]);
+    } else if (v.pool === "fair" && st === "TX") {
+      add("info", "Texas FAIR Plan policy",
+        "You told us your home is insured through the Texas FAIR Plan.",
+        "TDI says FAIR Plan coverage is for people that at least two companies have turned down. This tool has not verified what the Texas FAIR Plan covers.",
+        "Read the policy and ask what is excluded.", ["tdihome"]);
+    } else if (v.pool === "twia" && st === "TX") {
+      add("watch", "TWIA covers wind and hail only",
+        "You told us you have TWIA coverage.",
+        "TDI describes TWIA as wind and hail coverage for coastal residents. Other perils such as fire and theft, and flood, need other policies.",
+        "Confirm you also have a home policy for other perils and a flood policy.", ["tdihome", "twia"]);
+    } else if (v.pool === "citizens" && st === "FL") {
+      var cites = ["citflood"];
+      if (flood !== "yes" && isNum(v.dwelling) && v.dwelling >= 400000) {
+        add("gap", "Citizens policy with a $400,000+ dwelling limit and no flood coverage",
+          "Your dwelling limit is " + money(v.dwelling) + " and you " + (flood === "no" ? "do not have" : "are not sure you have") + " flood insurance.",
+          "Reported schedule: Citizens wind policies with $400,000+ dwelling replacement cost need flood coverage from January 1, 2026, and all remaining policies from January 1, 2027. This comes from secondary sources quoting Florida Statutes 627.351(6)(aa); confirm with Citizens.",
+          "Check the flood requirement on Citizens' site and your renewal notice.", cites);
+      } else if (flood !== "yes") {
+        add("watch", "Citizens flood requirement is expanding",
+          "You told us your home is insured through Citizens and you do not have flood insurance.",
+          "Reported schedule: all remaining Citizens wind policies must carry flood coverage from January 1, 2027 (secondary sources quoting the statute).",
+          "Confirm the current rule with Citizens.", cites);
+      }
+      add("info", "Citizens and private offers",
+        "Citizens is Florida's last-resort insurer.", "Secondary sources report a private offer within 20% of the Citizens rate can make a home ineligible for Citizens.",
+        "Get private quotes before renewal and confirm the rule with Citizens.", cites);
+    }
+  }
+
+  // 10. Regular deductible vs dwelling
+  if (isNum(v.deductible) && isNum(v.dwelling) && v.dwelling > 0 && v.deductible / v.dwelling > 0.05) {
+    add("info", "Deductible is more than 5% of the dwelling limit",
+      "Deductible " + money(v.deductible) + " on a " + money(v.dwelling) + " dwelling limit (" + (100 * v.deductible / v.dwelling).toFixed(1) + "%).",
+      "Larger deductibles lower premiums but raise what you pay first on a claim.", "Confirm you could cover this amount.", []);
+  }
+  return f;
+}
+
+var HOME_QUESTIONS = {
+  CA: ["How did you calculate my rebuild cost, and can I have the estimate in writing?", "Is building-code upgrade coverage included?",
+       "Which Safer from Wildfires discounts apply to my home, what is my wildfire risk score, and how do I appeal it?",
+       "What earthquake options are available and what would the deductible be?", "If I am on the FAIR Plan, which private supplemental policy fills the gaps?"],
+  TX: ["Is my policy replacement cost or actual cash value, including for my roof?", "What is my wind and hail deductible in dollars?",
+       "Am I in the TWIA area and do I have wind and hail coverage?", "Do I need flood insurance, and how soon would a new policy take effect?"],
+  FL: ["What is my hurricane deductible in dollars, and can I lower it with mitigation credits?", "What wind mitigation credits am I receiving?",
+       "Do I have flood coverage, and does my policy or lender require it?", "If I am with Citizens, have I compared private offers and met the flood requirement?"]
+};
+
+if (false) { module.exports = {autoCheck: autoCheck, homeCheck: homeCheck, AUTO: AUTO, SRC: SRC, AUTO_QUESTIONS: AUTO_QUESTIONS, HOME_QUESTIONS: HOME_QUESTIONS}; }
+
+</script>
+<script>
+(function(){
+  var LEVEL = {below:"Below a legal minimum", gap:"Likely gap", watch:"Worth checking", info:"For your information", ok:"No gap found"};
+  var RANK = {below:0, gap:1, watch:2, info:3, ok:4};
+  var $ = function(id){ return document.getElementById(id); };
+  $("verified").textContent = LAST_VERIFIED; $("verified2").textContent = LAST_VERIFIED;
+
+  function num(id){ var t = $(id).value.replace(/[$,\s]/g,""); if(t==="") return null; var n = Number(t); return isFinite(n) ? n : null; }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  // tabs
+  function showTab(which){
+    var auto = which==="auto";
+    $("panel-auto").classList.toggle("hidden", !auto); $("panel-home").classList.toggle("hidden", auto);
+    $("tab-auto").setAttribute("aria-selected", auto); $("tab-home").setAttribute("aria-selected", !auto);
+    $("results").innerHTML = "";
+  }
+  $("tab-auto").onclick = function(){ showTab("auto"); }; $("tab-home").onclick = function(){ showTab("home"); };
+
+  // home state-specific fields
+  var POOLS = {CA:[["none","No"],["fair","California FAIR Plan"]], TX:[["none","No"],["fair","Texas FAIR Plan"],["twia","TWIA (wind and hail)"]], FL:[["none","No"],["citizens","Citizens Property Insurance"]]};
+  function syncHome(){
+    var st = $("h-state").value;
+    $("h-pool").innerHTML = POOLS[st].map(function(p){return '<option value="'+p[0]+'">'+p[1]+'</option>';}).join("");
+    $("wrap-quake").classList.toggle("hidden", st!=="CA");
+    $("wrap-wind").classList.toggle("hidden", st==="CA");
+    $("wrap-twia").classList.toggle("hidden", st!=="TX");
+    $("wrap-windcov").classList.toggle("hidden", st!=="TX");
+  }
+  $("h-state").onchange = syncHome; syncHome();
+  $("reset-home").addEventListener("click", function(){ setTimeout(syncHome,0); $("results").innerHTML=""; });
+  $("reset-auto").addEventListener("click", function(){ $("results").innerHTML=""; });
+
+  function render(title, flags, questions){
+    var counts = {below:0,gap:0,watch:0,info:0,ok:0};
+    flags.forEach(function(f){ counts[f.level]++; });
+    flags = flags.map(function(f,i){ f._i=i; return f; }).sort(function(a,b){ return RANK[a.level]-RANK[b.level] || a._i-b._i; });
+    var used = {};
+    var html = '<h2 id="res-title" tabindex="-1">'+esc(title)+'</h2><div class="summary">';
+    ["below","gap","watch","info","ok"].forEach(function(k){ if(counts[k]) html += '<span class="pill">'+counts[k]+' '+esc(LEVEL[k])+'</span>'; });
+    html += '</div>';
+    if(!flags.length) html += '<p>Enter your numbers and try again.</p>';
+    flags.forEach(function(f){
+      html += '<article class="flag '+f.level+'"><span class="badge">'+esc(LEVEL[f.level])+'</span><h3>'+esc(f.title)+'</h3>';
+      if(f.what) html += '<p><span class="lbl">What we noticed: </span>'+esc(f.what)+'</p>';
+      if(f.why) html += '<p><span class="lbl">Why it matters: </span>'+esc(f.why)+'</p>';
+      if(f.check) html += '<p><span class="lbl">What to check: </span>'+esc(f.check)+'</p>';
+      if(f.cites.length){
+        html += '<div class="srcs">Sources: ' + f.cites.map(function(k){ used[k]=1; var s=SRC[k]; return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.name)+'</a><span class="status'+(s.status.indexOf("Primary")===0?'':' sec')+'">'+esc(s.status)+'</span>'; }).join("; ") + '</div>';
+      }
+      html += '</article>';
+    });
+    if(questions && questions.length){
+      html += '<h2>Questions to ask your insurer</h2><ul class="q">'+questions.map(function(q){return '<li>'+esc(q)+'</li>';}).join("")+'</ul>';
+    }
+    html += '<div class="actions"><button class="btn secondary" type="button" id="print">Print or save as PDF</button></div>';
+    $("results").innerHTML = html;
+    $("print").onclick = function(){ window.print(); };
+    $("res-title").focus();
+  }
+
+  $("form-auto").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = {state:$("a-state").value, financed:$("a-financed").value, bipp:num("a-bipp"), bipa:num("a-bipa"), pd:num("a-pd"), assets:num("a-assets"),
+             um:$("a-um").value, pip:$("a-pip").value, coll:$("a-coll").value, comp:$("a-comp").value, vehicleValue:num("a-value"), deductible:num("a-ded")};
+    render("Car insurance results: " + AUTO[v.state].name, autoCheck(v), AUTO_QUESTIONS[v.state]);
+  });
+  $("form-home").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = {state:$("h-state").value, pool:$("h-pool").value, dwelling:num("h-dwelling"), rebuild:num("h-rebuild"), settlement:$("h-settle").value,
+             contents:num("h-contents"), liability:num("h-liab"), deductible:num("h-ded"), assets:num("h-assets"), umbrella:$("h-umb").value,
+             flood:$("h-flood").value, zone:$("h-zone").value, quake:$("h-quake").value, windPct:num("h-wind"), twiaArea:$("h-twia").value, wind:$("h-windcov").value};
+    render("Home insurance results: " + HOME[v.state].name, homeCheck(v), HOME_QUESTIONS[v.state]);
+  });
+})();
+</script>
+</body>
+</html>

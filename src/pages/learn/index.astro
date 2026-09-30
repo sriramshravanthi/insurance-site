@@ -1,0 +1,62 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const articles = [
+  {
+    href: "/learn/why-prices-differ/",
+    title: "Why insurance prices differ between companies",
+    blurb: "The same driver or home can get very different quotes. Here's why that happens.",
+  },
+  {
+    href: "/learn/what-affects-premiums/",
+    title: "What affects your premium",
+    blurb: "Driver, vehicle, property, and location factors that insurers commonly weigh.",
+  },
+  {
+    href: "/learn/coverage-types/",
+    title: "Coverage types explained",
+    blurb: "Liability, collision, comprehensive, dwelling, flood, and more — in plain language.",
+  },
+  {
+    href: "/learn/discounts/",
+    title: "How insurance discounts work",
+    blurb: "Common discount categories, and why availability depends on your insurer and state.",
+  },
+  {
+    href: "/learn/deductibles/",
+    title: "Deductibles: what they are and how they trade off",
+    blurb: "How a deductible changes your premium and what you'd pay out of pocket in a claim.",
+  },
+  {
+    href: "/learn/policy-terms/",
+    title: "Six-month vs. annual policies",
+    blurb: "How policy terms, renewals, and mid-term changes work.",
+  },
+];
+---
+
+<BaseLayout
+  title="Learn"
+  description="Plain-language guides to how car and home insurance pricing and coverage work."
+>
+  <h1>Learn</h1>
+  <p>
+    These guides explain how insurance pricing and coverage generally work.
+    They describe possible factors and industry-wide patterns, not
+    guarantees — your actual price and coverage depend on your insurer's own
+    underwriting and the law in your state. Where a guide mentions a specific
+    state's rule, it links to that state's verified page rather than
+    restating the number.
+  </p>
+
+  <div class="section-links">
+    {
+      articles.map((a) => (
+        <a href={a.href}>
+          {a.title}
+          <span class="blurb">{a.blurb}</span>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>

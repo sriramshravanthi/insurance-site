@@ -1,0 +1,90 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "Educational information about U.S. car and home insurance. Not insurance advice, not a quote, not a coverage decision.",
+} = Astro.props;
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/auto-insurance/", label: "Auto Insurance" },
+  { href: "/home-insurance/", label: "Home Insurance" },
+  { href: "/compare/", label: "Compare" },
+  { href: "/savings/", label: "Savings" },
+  { href: "/learn/", label: "Learn" },
+  { href: "/insurance-companies/", label: "Insurance Companies" },
+  { href: "/tools/", label: "Tools" },
+  { href: "/about/", label: "About" },
+];
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} | Insurance Education & Comparison</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="/">Insurance Education &amp; Comparison</a>
+        <nav aria-label="Primary">
+          <ul class="nav-list">
+            {
+              navItems.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p class="disclaimer">
+          <strong>Educational information only.</strong> Nothing on this site
+          is insurance advice, an insurance quote, or a coverage decision.
+          Always confirm details with your insurer or a licensed
+          professional.
+        </p>
+        <ul class="footer-links">
+          <li><a href="/about/">About</a></li>
+          <li><a href="/how-we-make-money/">How We Make Money</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/terms/">Terms</a></li>
+        </ul>
+        <p class="fine">
+          &copy; {new Date().getFullYear()} Insurance Education &amp; Comparison.
+          Content is verified state by state; unresearched states and topics
+          are marked "Coming soon" rather than guessed at.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

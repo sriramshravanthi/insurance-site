@@ -1,0 +1,655 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Tools"
+  description="Coverage Gap Checker for car and home insurance — compare your policy numbers against verified state rules."
+>
+  <div class="tool">
+    <h1>Coverage Gap Checker</h1>
+    <p class="lead">
+      Enter numbers from your declarations page to see where your car or home
+      coverage may differ from state rules or common gaps. Covers California,
+      Texas, Florida and New York (auto) and California, Texas and Florida
+      (home).
+    </p>
+    <div class="notice" role="note">
+      <strong
+        >Educational tool, not insurance advice, not a quote, and not a
+        coverage decision.</strong
+      >
+      It compares what you type with rules we checked on <span id="verified"
+      ></span> and cannot see your actual policy. Your insurer's policy language
+      controls. Nothing you enter leaves your device; nothing is saved. Confirm
+      anything important with your insurer or a licensed professional.
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Insurance type">
+      <button role="tab" id="tab-auto" aria-selected="true" aria-controls="panel-auto">Car insurance</button>
+      <button role="tab" id="tab-home" aria-selected="false" aria-controls="panel-home">Home insurance</button>
+    </div>
+
+    <section id="panel-auto" role="tabpanel" aria-labelledby="tab-auto">
+      <form id="form-auto" novalidate>
+        <fieldset>
+          <legend>Where and what</legend>
+          <div class="grid">
+            <div>
+              <label for="a-state">State</label>
+              <select id="a-state">
+                <option value="CA">California</option>
+                <option value="TX">Texas</option>
+                <option value="FL">Florida</option>
+                <option value="NY">New York</option>
+              </select>
+            </div>
+            <div>
+              <label for="a-financed">Is the car financed or leased?</label>
+              <select id="a-financed">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Liability limits (in dollars)</legend>
+          <div class="grid">
+            <div>
+              <label for="a-bipp">Injury, per person<span class="hint">e.g. 30000</span></label>
+              <input id="a-bipp" inputmode="numeric" placeholder="30000" />
+            </div>
+            <div>
+              <label for="a-bipa">Injury, per accident<span class="hint">e.g. 60000</span></label>
+              <input id="a-bipa" inputmode="numeric" placeholder="60000" />
+            </div>
+            <div>
+              <label for="a-pd">Property damage<span class="hint">e.g. 15000</span></label>
+              <input id="a-pd" inputmode="numeric" placeholder="15000" />
+            </div>
+            <div>
+              <label for="a-assets"
+                >Assets you want to protect<span class="hint"
+                  >Optional: home equity, savings, investments</span
+                ></label
+              >
+              <input id="a-assets" inputmode="numeric" placeholder="250000" />
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Other coverages</legend>
+          <div class="grid">
+            <div>
+              <label for="a-um">Uninsured/underinsured motorist</label>
+              <select id="a-um">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div>
+              <label for="a-pip">Injury coverage for you<span class="hint">PIP / no-fault / medical payments</span></label>
+              <select id="a-pip">
+                <option value="unsure">Not sure</option>
+                <option value="pip">PIP or no-fault</option>
+                <option value="medpay">Medical payments only</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+            <div>
+              <label for="a-coll">Collision</label>
+              <select id="a-coll">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div>
+              <label for="a-comp">Comprehensive</label>
+              <select id="a-comp">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div>
+              <label for="a-value">Vehicle value<span class="hint">Optional</span></label>
+              <input id="a-value" inputmode="numeric" placeholder="18000" />
+            </div>
+            <div>
+              <label for="a-ded">Collision deductible<span class="hint">Optional</span></label>
+              <input id="a-ded" inputmode="numeric" placeholder="500" />
+            </div>
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button class="btn" type="submit">Check for gaps</button>
+          <button class="btn secondary" type="reset" id="reset-auto">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="panel-home" role="tabpanel" aria-labelledby="tab-home" class="hidden">
+      <form id="form-home" novalidate>
+        <fieldset>
+          <legend>Where and how it is insured</legend>
+          <div class="grid">
+            <div>
+              <label for="h-state">State</label>
+              <select id="h-state">
+                <option value="CA">California</option>
+                <option value="TX">Texas</option>
+                <option value="FL">Florida</option>
+              </select>
+            </div>
+            <div>
+              <label for="h-pool">Insured through a state-backed plan?</label>
+              <select id="h-pool"></select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Limits and deductibles (in dollars)</legend>
+          <div class="grid">
+            <div>
+              <label for="h-dwelling">Dwelling limit (Coverage A)</label>
+              <input id="h-dwelling" inputmode="numeric" placeholder="800000" />
+            </div>
+            <div>
+              <label for="h-rebuild"
+                >Your estimate to rebuild<span class="hint"
+                  >Optional. Not the market value or purchase price.</span
+                ></label
+              >
+              <input id="h-rebuild" inputmode="numeric" placeholder="900000" />
+            </div>
+            <div>
+              <label for="h-settle">Policy pays</label>
+              <select id="h-settle">
+                <option value="unsure">Not sure</option>
+                <option value="rc">Replacement cost</option>
+                <option value="acv">Actual cash value</option>
+              </select>
+            </div>
+            <div>
+              <label for="h-contents">Personal property limit</label>
+              <input id="h-contents" inputmode="numeric" placeholder="400000" />
+            </div>
+            <div>
+              <label for="h-liab">Personal liability limit</label>
+              <input id="h-liab" inputmode="numeric" placeholder="300000" />
+            </div>
+            <div>
+              <label for="h-ded">Main deductible</label>
+              <input id="h-ded" inputmode="numeric" placeholder="2500" />
+            </div>
+            <div>
+              <label for="h-assets">Assets you want to protect<span class="hint">Optional</span></label>
+              <input id="h-assets" inputmode="numeric" placeholder="1000000" />
+            </div>
+            <div>
+              <label for="h-umb">Do you have an umbrella policy?</label>
+              <select id="h-umb">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Flood and other perils</legend>
+          <div class="grid">
+            <div>
+              <label for="h-flood">Flood insurance</label>
+              <select id="h-flood">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div>
+              <label for="h-zone">In a FEMA high-risk flood zone?</label>
+              <select id="h-zone">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div id="wrap-quake">
+              <label for="h-quake">Earthquake insurance</label>
+              <select id="h-quake">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div id="wrap-wind" class="hidden">
+              <label for="h-wind"
+                >Hurricane or wind/hail deductible, percent<span class="hint"
+                  >Optional, e.g. 2 for 2%</span
+                ></label
+              >
+              <input id="h-wind" inputmode="decimal" placeholder="2" />
+            </div>
+            <div id="wrap-twia" class="hidden">
+              <label for="h-twia">Home in the TWIA coastal area?</label>
+              <select id="h-twia">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div id="wrap-windcov" class="hidden">
+              <label for="h-windcov">Wind and hail coverage</label>
+              <select id="h-windcov">
+                <option value="unsure">Not sure</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button class="btn" type="submit">Check for gaps</button>
+          <button class="btn secondary" type="reset" id="reset-home">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="results" aria-live="polite" tabindex="-1"></section>
+
+    <p class="tool-legend">
+      Levels: <strong>Below a legal minimum</strong> = a number you entered is
+      under a state requirement we checked. <strong>Likely gap</strong> = a
+      common uncovered risk or program condition, not a legal minimum.
+      <strong>Worth checking</strong> and <strong>For your information</strong>
+      are prompts, not conclusions. Each item lists its source and whether that
+      source is a regulator or statute ("Primary source") or a secondary source
+      we could not confirm. Rules change; this tool reflects sources checked on
+      <span id="verified2"></span>. This tool does not rate risk, recommend a
+      company, or compare prices.
+    </p>
+  </div>
+
+  <script>
+    import {
+      autoCheck,
+      homeCheck,
+      AUTO,
+      HOME,
+      SRC,
+      AUTO_QUESTIONS,
+      HOME_QUESTIONS,
+      LAST_VERIFIED,
+    } from "../lib/coverageGapChecker.js";
+
+    const LEVEL = { below: "Below a legal minimum", gap: "Likely gap", watch: "Worth checking", info: "For your information", ok: "No gap found" };
+    const RANK = { below: 0, gap: 1, watch: 2, info: 3, ok: 4 };
+    const $ = (id) => document.getElementById(id);
+    $("verified").textContent = LAST_VERIFIED;
+    $("verified2").textContent = LAST_VERIFIED;
+
+    function num(id) {
+      const t = $(id).value.replace(/[$,\s]/g, "");
+      if (t === "") return null;
+      const n = Number(t);
+      return isFinite(n) ? n : null;
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    }
+
+    // tabs
+    function showTab(which) {
+      const auto = which === "auto";
+      $("panel-auto").classList.toggle("hidden", !auto);
+      $("panel-home").classList.toggle("hidden", auto);
+      $("tab-auto").setAttribute("aria-selected", auto);
+      $("tab-home").setAttribute("aria-selected", !auto);
+      $("results").innerHTML = "";
+    }
+    $("tab-auto").onclick = () => showTab("auto");
+    $("tab-home").onclick = () => showTab("home");
+
+    // home state-specific fields
+    const POOLS = {
+      CA: [["none", "No"], ["fair", "California FAIR Plan"]],
+      TX: [["none", "No"], ["fair", "Texas FAIR Plan"], ["twia", "TWIA (wind and hail)"]],
+      FL: [["none", "No"], ["citizens", "Citizens Property Insurance"]],
+    };
+    function syncHome() {
+      const st = $("h-state").value;
+      $("h-pool").innerHTML = POOLS[st].map((p) => `<option value="${p[0]}">${p[1]}</option>`).join("");
+      $("wrap-quake").classList.toggle("hidden", st !== "CA");
+      $("wrap-wind").classList.toggle("hidden", st === "CA");
+      $("wrap-twia").classList.toggle("hidden", st !== "TX");
+      $("wrap-windcov").classList.toggle("hidden", st !== "TX");
+    }
+    $("h-state").onchange = syncHome;
+    syncHome();
+    $("reset-home").addEventListener("click", () => {
+      setTimeout(syncHome, 0);
+      $("results").innerHTML = "";
+    });
+    $("reset-auto").addEventListener("click", () => {
+      $("results").innerHTML = "";
+    });
+
+    function render(title, flags, questions) {
+      const counts = { below: 0, gap: 0, watch: 0, info: 0, ok: 0 };
+      flags.forEach((f) => counts[f.level]++);
+      flags = flags.map((f, i) => ({ ...f, _i: i })).sort((a, b) => RANK[a.level] - RANK[b.level] || a._i - b._i);
+      let html = `<h2 id="res-title" tabindex="-1">${esc(title)}</h2><div class="summary">`;
+      ["below", "gap", "watch", "info", "ok"].forEach((k) => {
+        if (counts[k]) html += `<span class="pill">${counts[k]} ${esc(LEVEL[k])}</span>`;
+      });
+      html += "</div>";
+      if (!flags.length) html += "<p>Enter your numbers and try again.</p>";
+      flags.forEach((f) => {
+        html += `<article class="flag ${f.level}"><span class="badge">${esc(LEVEL[f.level])}</span><h3>${esc(f.title)}</h3>`;
+        if (f.what) html += `<p><span class="lbl">What we noticed: </span>${esc(f.what)}</p>`;
+        if (f.why) html += `<p><span class="lbl">Why it matters: </span>${esc(f.why)}</p>`;
+        if (f.check) html += `<p><span class="lbl">What to check: </span>${esc(f.check)}</p>`;
+        if (f.cites.length) {
+          html +=
+            '<div class="srcs">Sources: ' +
+            f.cites
+              .map((k) => {
+                const s = SRC[k];
+                return `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a><span class="status${s.status.indexOf("Primary") === 0 ? "" : " sec"}">${esc(s.status)}</span>`;
+              })
+              .join("; ") +
+            "</div>";
+        }
+        html += "</article>";
+      });
+      if (questions && questions.length) {
+        html += `<h2>Questions to ask your insurer</h2><ul class="q">${questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`;
+      }
+      html += '<div class="actions"><button class="btn secondary" type="button" id="print">Print or save as PDF</button></div>';
+      $("results").innerHTML = html;
+      $("print").onclick = () => window.print();
+      $("res-title").focus();
+    }
+
+    $("form-auto").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = {
+        state: $("a-state").value,
+        financed: $("a-financed").value,
+        bipp: num("a-bipp"),
+        bipa: num("a-bipa"),
+        pd: num("a-pd"),
+        assets: num("a-assets"),
+        um: $("a-um").value,
+        pip: $("a-pip").value,
+        coll: $("a-coll").value,
+        comp: $("a-comp").value,
+        vehicleValue: num("a-value"),
+        deductible: num("a-ded"),
+      };
+      render("Car insurance results: " + AUTO[v.state].name, autoCheck(v), AUTO_QUESTIONS[v.state]);
+    });
+    $("form-home").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = {
+        state: $("h-state").value,
+        pool: $("h-pool").value,
+        dwelling: num("h-dwelling"),
+        rebuild: num("h-rebuild"),
+        settlement: $("h-settle").value,
+        contents: num("h-contents"),
+        liability: num("h-liab"),
+        deductible: num("h-ded"),
+        assets: num("h-assets"),
+        umbrella: $("h-umb").value,
+        flood: $("h-flood").value,
+        zone: $("h-zone").value,
+        quake: $("h-quake").value,
+        windPct: num("h-wind"),
+        twiaArea: $("h-twia").value,
+        wind: $("h-windcov").value,
+      };
+      render("Home insurance results: " + HOME[v.state].name, homeCheck(v), HOME_QUESTIONS[v.state]);
+    });
+  </script>
+
+  <style>
+    .tool {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin: 0.2em 0;
+    }
+    h2 {
+      font-size: 1.15rem;
+      margin: 1.2em 0 0.4em;
+    }
+    .lead {
+      color: var(--muted);
+      margin: 0.2em 0 1em;
+    }
+    .notice {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      background: var(--card);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .tabs button[aria-selected="true"] {
+      border-color: var(--accent);
+      outline: 2px solid var(--accent);
+      font-weight: 600;
+    }
+    form {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    fieldset {
+      border: 0;
+      margin: 0 0 10px;
+      padding: 0;
+    }
+    legend {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 620px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .hint {
+      display: block;
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 1rem;
+    }
+    input:focus,
+    select:focus,
+    button:focus {
+      outline: 3px solid var(--accent);
+      outline-offset: 1px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 11px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    @media (prefers-color-scheme: dark) {
+      .btn {
+        color: #0b1220;
+      }
+    }
+    .btn.secondary {
+      background: transparent;
+      color: var(--accent);
+    }
+    .hidden {
+      display: none;
+    }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 12px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.85rem;
+      background: var(--card);
+    }
+    .flag {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left-width: 6px;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 10px 0;
+    }
+    .flag.below {
+      border-left-color: var(--below);
+    }
+    .flag.gap {
+      border-left-color: var(--gap-level);
+    }
+    .flag.watch {
+      border-left-color: var(--watch);
+    }
+    .flag.info {
+      border-left-color: var(--info);
+    }
+    .flag.ok {
+      border-left-color: var(--ok);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid currentColor;
+      margin-bottom: 4px;
+    }
+    .below .badge {
+      color: var(--below);
+    }
+    .gap .badge {
+      color: var(--gap-level);
+    }
+    .watch .badge {
+      color: var(--watch);
+    }
+    .info .badge {
+      color: var(--info);
+    }
+    .ok .badge {
+      color: var(--ok);
+    }
+    .flag h3 {
+      margin: 0.1em 0 0.3em;
+      font-size: 1.02rem;
+    }
+    .flag p {
+      margin: 0.25em 0;
+      font-size: 0.93rem;
+    }
+    .lbl {
+      font-weight: 600;
+    }
+    .srcs {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .srcs a {
+      color: var(--accent);
+    }
+    .status {
+      font-size: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 4px;
+    }
+    .status.sec {
+      border-color: var(--watch);
+      color: var(--watch);
+    }
+    ul.q {
+      padding-left: 1.2em;
+    }
+    ul.q li {
+      margin: 0.3em 0;
+    }
+    .tool-legend {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 24px 0;
+    }
+    @media print {
+      .tabs,
+      form,
+      .actions {
+        display: none;
+      }
+    }
+  </style>
+</BaseLayout>

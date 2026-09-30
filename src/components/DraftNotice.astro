@@ -1,0 +1,17 @@
+---
+interface Props {
+  note?: string;
+}
+
+const { note } = Astro.props;
+---
+
+<div class="draft-notice" role="note">
+  <span class="badge-draft">Draft — pending legal review</span>
+  <p>
+    {
+      note ??
+        "This page is a draft. It has not yet been reviewed by an insurance-regulatory lawyer and may change before this site is used publicly."
+    }
+  </p>
+</div>

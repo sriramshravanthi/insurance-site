@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FactCard from "../../components/FactCard.astro";
+import { loadRulesIndex, loadStateFacts, groupFactsByTopic } from "../../lib/rulesData";
+
+export function getStaticPaths() {
+  const index = loadRulesIndex();
+  return index.availability.auto.map((s) => ({
+    params: { state: s.code.toLowerCase() },
+  }));
+}
+
+const { state } = Astro.params;
+const data = loadStateFacts(state, "auto");
+
+if (!data) {
+  return Astro.redirect("/auto-insurance/");
+}
+
+const groups = groupFactsByTopic(data.facts);
+---
+
+<BaseLayout
+  title={`${data.state.name} Auto Insurance`}
+  description={`Verified auto insurance rules for ${data.state.name}, sourced from regulators and official filings.`}
+>
+  <a class="back-link" href="/auto-insurance/">&larr; All states</a>
+  <h1>{data.state.name} — Auto Insurance</h1>
+  <p>
+    Every item below is traced to a primary source and shown with its source
+    link and the date we last verified it. This is reference information,
+    not a quote — your policy's actual terms control.
+  </p>
+
+  {
+    groups.map((group) => (
+      <div class="topic-group">
+        <h2>{group.topic}</h2>
+        {group.items.map((item) => (
+          <FactCard
+            fact={item.fact}
+            value={item.value}
+            legalCitation={item.legalCitation}
+            sourceName={item.sourceName}
+            sourceUrl={item.sourceUrl}
+            lastVerified={item.lastVerified}
+          />
+        ))}
+      </div>
+    ))
+  }
+</BaseLayout>

@@ -1,0 +1,16 @@
+# build output
+dist/
+.astro/
+
+# generated from DATA/insurance_rules.db — regenerate with `npm run data:export`
+src/data/rules/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment
+.env
+.env.production
