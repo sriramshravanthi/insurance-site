@@ -2,7 +2,7 @@
 
 **Files:** `insurance_rules.db` (SQLite, ready to query) and `insurance_rules_schema.sql` (the same structure as plain SQL, portable to Postgres with minor changes).
 
-The database was generated from `Insurance_Reference_Data_v5.xlsx` on 2026-09-30, with New York home, Illinois auto/home, Pennsylvania auto/home, Georgia auto/home, and North Carolina auto/home insurance facts added on 2026-10-01. The workbook stays the place where research is done; the database is what the website reads. Regenerate the database after each workbook update so they never disagree.
+The database was generated from `Insurance_Reference_Data_v5.xlsx` on 2026-09-30, with New York home, Illinois auto/home, Pennsylvania auto/home, Georgia auto/home, North Carolina auto/home, and New Jersey auto/home insurance facts added on 2026-10-01. The workbook stays the place where research is done; the database is what the website reads. Regenerate the database after each workbook update so they never disagree.
 
 ## The idea in one paragraph
 Every rule is stored as one checkable statement with its source, its verification status and its dates. The website may only publish statements marked "Primary source". Anything weaker stays in the database as a to-do, not on the site. This mirrors the site principle "never show an unverified number as fact."
@@ -11,9 +11,9 @@ Every rule is stored as one checkable statement with its source, its verificatio
 
 | Table | What it holds | Rows now |
 |---|---|---|
-| `source` | Every source with publisher type (regulator, blog, etc.) and a reliability note | 111 |
+| `source` | Every source with publisher type (regulator, blog, etc.) and a reliability note | 114 |
 | `jurisdiction` | US (federal), 50 states + DC, and a "multiple" bucket | 53 |
-| `rule_fact` | Main table: verified state auto and home rules, one statement per row | 282 |
+| `rule_fact` | Main table: verified state auto and home rules, one statement per row | 300 |
 | `min_limit` | Minimum liability limits as numbers so calculators can compare them | 21 |
 | `rating_factor_rule` | Credit, gender, age rules by state | 15 |
 | `discount` | Discounts and where they are mandated or optional | 31 |
@@ -58,8 +58,8 @@ SELECT s.publisher_type, COUNT(*) FROM rule_fact f JOIN source s USING (source_i
 ```
 
 ## Current picture
-- 265 of 282 facts come from regulator or government sources; 17 come from blogs or news.
-- 16 conflicts are still open. 10 refresh tasks have never been verified (all the not-yet-researched states and topics).
+- 283 of 300 facts come from regulator or government sources; 17 come from blogs or news.
+- 15 conflicts are still open. 10 refresh tasks have never been verified (all the not-yet-researched states and topics).
 - Integrity check and foreign-key check both pass.
 
 ## How to maintain it
