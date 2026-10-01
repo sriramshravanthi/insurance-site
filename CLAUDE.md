@@ -21,7 +21,7 @@ An education-first website that helps U.S. consumers understand, compare and pos
 - `coverage_gap_checker.html`: a working first tool (car: CA, TX, FL, NY; home: CA, TX, FL). Its logic is in one script and currently carries its own copy of the rules.
 
 ## Coverage today
-Verified from primary sources: California auto and home; Texas, Florida, New York, Illinois, Pennsylvania and Georgia auto; Texas, Florida, New York, Illinois, Pennsylvania and Georgia home (Florida home is thin). All other states are not yet researched. Do not create pages that imply otherwise. Pages for unresearched states should say "coming soon".
+Verified from primary sources: California auto and home; Texas, Florida, New York, Illinois, Pennsylvania, Georgia and North Carolina auto; Texas, Florida, New York, Illinois, Pennsylvania, Georgia and North Carolina home (Florida home is thin). All other states are not yet researched. Do not create pages that imply otherwise. Pages for unresearched states should say "coming soon".
 
 ## Open items (do not publish as fact)
 See view `v_open_conflicts` and `v_facts_needing_work` in the database. Examples: home credit-use rules in California, Citizens flood phase-in details in Florida, TWIA dwelling limit in Texas.
