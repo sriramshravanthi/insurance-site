@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { autoCheck, homeCheck, money, isNum, AUTO } from "../src/lib/coverageGapChecker.js";
+import {
+  autoCheck,
+  homeCheck,
+  savingsOpportunities,
+  money,
+  isNum,
+  AUTO,
+} from "../src/lib/coverageGapChecker.js";
 
 function flagsByLevel(flags, level) {
   return flags.filter((f) => f.level === level);
@@ -123,5 +130,51 @@ describe("homeCheck", () => {
   it("flags a Florida Citizens policy with a $400k+ dwelling and no flood coverage", () => {
     const flags = homeCheck({ state: "FL", pool: "citizens", dwelling: 450000, flood: "no" });
     expect(flagsByLevel(flags, "gap").some((f) => f.title.includes("$400,000+ dwelling limit"))).toBe(true);
+  });
+});
+
+describe("savingsOpportunities", () => {
+  it("returns null when no premium is entered", () => {
+    expect(savingsOpportunities({ state: "CA" }, "auto")).toBeNull();
+    expect(savingsOpportunities({ state: "CA", premium: null }, "auto")).toBeNull();
+  });
+
+  it("returns null for a zero or negative premium", () => {
+    expect(savingsOpportunities({ state: "CA", premium: 0 }, "auto")).toBeNull();
+    expect(savingsOpportunities({ state: "CA", premium: -100 }, "auto")).toBeNull();
+  });
+
+  it("computes the monthly equivalent from the annual premium", () => {
+    const result = savingsOpportunities({ state: "CA", premium: 2400 }, "auto");
+    expect(result.currentPremium).toBe(2400);
+    expect(result.monthlyEquivalent).toBe(200);
+  });
+
+  it("includes every verified California discount, each with a source", () => {
+    const result = savingsOpportunities({ state: "CA", premium: 2400 }, "auto");
+    const withSource = result.items.filter((i) => i.sourceUrl);
+    expect(withSource.length).toBeGreaterThanOrEqual(4); // CA has 4 Primary-source discounts
+    for (const item of withSource) {
+      expect(item.sourceUrl).toMatch(/^https:\/\//);
+      expect(item.text).toContain("Ask whether you're getting");
+    }
+  });
+
+  it("never mentions a specific dollar savings amount", () => {
+    const result = savingsOpportunities({ state: "TX", premium: 1800 }, "auto");
+    for (const item of result.items) {
+      expect(item.text).not.toMatch(/\$\d/);
+    }
+  });
+
+  it("always includes the warning against cutting coverage just to save money", () => {
+    const result = savingsOpportunities({ state: "CA", premium: 2400 }, "auto");
+    expect(result.warning).toMatch(/never reduce coverage/i);
+  });
+
+  it("home savings opportunities have no source citations, since no state has verified home discount data", () => {
+    const result = savingsOpportunities({ state: "CA", premium: 3000 }, "home");
+    expect(result.items.length).toBeGreaterThan(0);
+    expect(result.items.every((i) => !i.sourceUrl)).toBe(true);
   });
 });
