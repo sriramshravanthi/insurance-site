@@ -2,7 +2,7 @@
 
 **Files:** `insurance_rules.db` (SQLite, ready to query) and `insurance_rules_schema.sql` (the same structure as plain SQL, portable to Postgres with minor changes).
 
-The database was generated from `Insurance_Reference_Data_v5.xlsx` on 2026-09-30. The workbook stays the place where research is done; the database is what the website reads. Regenerate the database after each workbook update so they never disagree.
+The database was generated from `Insurance_Reference_Data_v5.xlsx` on 2026-09-30, with New York home insurance facts added on 2026-10-01. The workbook stays the place where research is done; the database is what the website reads. Regenerate the database after each workbook update so they never disagree.
 
 ## The idea in one paragraph
 Every rule is stored as one checkable statement with its source, its verification status and its dates. The website may only publish statements marked "Primary source". Anything weaker stays in the database as a to-do, not on the site. This mirrors the site principle "never show an unverified number as fact."
@@ -11,12 +11,12 @@ Every rule is stored as one checkable statement with its source, its verificatio
 
 | Table | What it holds | Rows now |
 |---|---|---|
-| `source` | Every source with publisher type (regulator, blog, etc.) and a reliability note | 94 |
+| `source` | Every source with publisher type (regulator, blog, etc.) and a reliability note | 98 |
 | `jurisdiction` | US (federal), 50 states + DC, and a "multiple" bucket | 53 |
-| `rule_fact` | Main table: verified state auto and home rules, one statement per row | 156 |
+| `rule_fact` | Main table: verified state auto and home rules, one statement per row | 175 |
 | `min_limit` | Minimum liability limits as numbers so calculators can compare them | 19 |
-| `rating_factor_rule` | Credit, gender, age rules by state | 13 |
-| `discount` | Discounts and where they are mandated or optional | 30 |
+| `rating_factor_rule` | Credit, gender, age rules by state | 14 |
+| `discount` | Discounts and where they are mandated or optional | 31 |
 | `telematics_program` | Carrier programs, availability, surcharge risk | 10 |
 | `coverage_detail` | Flood, earthquake, umbrella facts | 23 |
 | `price_benchmark` | Published average premiums with methodology | 13 |
@@ -58,7 +58,7 @@ SELECT s.publisher_type, COUNT(*) FROM rule_fact f JOIN source s USING (source_i
 ```
 
 ## Current picture
-- 139 of 156 facts come from regulator or government sources; 17 come from blogs or news.
+- 158 of 175 facts come from regulator or government sources; 17 come from blogs or news.
 - 16 conflicts are still open. 10 refresh tasks have never been verified (all the not-yet-researched states and topics).
 - Integrity check and foreign-key check both pass.
 
@@ -70,4 +70,4 @@ SELECT s.publisher_type, COUNT(*) FROM rule_fact f JOIN source s USING (source_i
 
 ## Not built yet
 - User accounts, quotes, or any personal data. Design that separately once counsel has reviewed consent and privacy needs.
-- A front-end API. Any web framework can read these tables; the coverage-gap checker currently carries its own small copy of the rules.
+- A front-end API. The site reads these tables at build time via a Node export script (`scripts/export-rules.mjs`) rather than querying the database live; the Coverage Gap Checker's state minimums and discount prompts are sourced from that export, not a hand-copied duplicate.
