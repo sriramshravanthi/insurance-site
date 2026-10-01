@@ -6,6 +6,7 @@ import {
   getStates,
   getPublishableFacts,
   getMinLimit,
+  getPrimaryDiscounts,
   LINES,
   AUTO_CHECKER_STATES,
 } from "./lib/rules-db.mjs";
@@ -62,6 +63,26 @@ function main() {
   fs.writeFileSync(
     path.join(OUT_DIR, "auto-min-limits.json"),
     JSON.stringify(autoMinLimits, null, 2) + "\n"
+  );
+
+  // Coverage Gap Checker: "Potential Savings Opportunities" prompts, built
+  // only from Primary-source discount rows — never an invented "you might
+  // be eligible for X" if it isn't verified for that state.
+  const autoDiscounts = { generatedAt: new Date().toISOString(), byState: {} };
+  for (const code of AUTO_CHECKER_STATES) {
+    autoDiscounts.byState[code] = getPrimaryDiscounts(db, code).map((d) => ({
+      discountId: d.discountId,
+      name: d.name,
+      category: d.category,
+      availability: d.availability,
+      sourceName: d.sourceName,
+      sourceUrl: d.sourceUrl,
+      lastVerified: d.lastVerified,
+    }));
+  }
+  fs.writeFileSync(
+    path.join(OUT_DIR, "auto-discounts.json"),
+    JSON.stringify(autoDiscounts, null, 2) + "\n"
   );
 
   db.close();

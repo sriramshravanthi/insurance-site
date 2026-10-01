@@ -5,10 +5,12 @@
 // scripts/export-rules.mjs) instead of being copied here by hand — run
 // `npm run data:export` to refresh it after the database changes.
 import minLimitsData from "../data/rules/auto-min-limits.json";
+import autoDiscountsData from "../data/rules/auto-discounts.json";
 
 export const LAST_VERIFIED = minLimitsData.limits.CA?.lastVerified ?? "unknown";
 
 const L = minLimitsData.limits;
+const AUTO_DISCOUNTS = autoDiscountsData.byState;
 
 export const SRC = {
   cadmv: { name: L.CA.sourceName, url: L.CA.sourceUrl, status: "Primary source" },
@@ -588,3 +590,52 @@ export var HOME_QUESTIONS = {
     "If I am with Citizens, have I compared private offers and met the flood requirement?",
   ],
 };
+
+// "Potential Savings Opportunities" — extends the checker per the project's
+// educational scope: prompts to investigate, never a computed savings
+// amount (no verified premium-benchmark data exists to compute one from —
+// see DATA/insurance_rules_db_design.md: price_benchmark is entirely
+// Secondary - unverified). Auto prompts include verified per-state discount
+// rules; home has no Primary-source discount data, so its prompts stay
+// general rather than claiming a state-specific rule that isn't verified.
+export var SAVINGS_WARNING =
+  "Never reduce coverage just to lower your premium without understanding the risk you'd be taking on. A lower premium from less coverage is a trade-off, not a straightforward saving.";
+
+function premiumSummary(premium) {
+  return {
+    currentPremium: premium,
+    monthlyEquivalent: premium / 12,
+  };
+}
+
+export function savingsOpportunities(v, line) {
+  if (!isNum(v.premium) || v.premium <= 0) return null;
+
+  var items = [];
+  if (line === "auto") {
+    var discounts = AUTO_DISCOUNTS[v.state] || [];
+    discounts.forEach(function (d) {
+      items.push({
+        text: 'Ask whether you\'re getting the "' + d.name + '" discount (' + d.availability + ").",
+        sourceName: d.sourceName,
+        sourceUrl: d.sourceUrl,
+      });
+    });
+    items.push({ text: "Ask about bundling this policy with home or renters insurance." });
+    items.push({
+      text: "Ask what a higher deductible would do to this premium, and weigh that against what you'd pay out of pocket in a claim.",
+    });
+    items.push({
+      text: "Ask about telematics or usage-based programs if you drive less than average — some insurers offer a lower rate, though a few can also raise it based on the data.",
+    });
+  } else {
+    items.push({ text: "Ask whether a security system, fire alarm, or sprinkler system qualifies for a discount." });
+    items.push({ text: "Ask whether a newer roof, or updated electrical or plumbing, qualifies for a discount." });
+    items.push({ text: "Ask about bundling this policy with an auto policy." });
+    items.push({ text: "Ask what a higher deductible would do to this premium, and weigh that against what you'd pay out of pocket in a claim." });
+    items.push({ text: "Confirm your insurer has current information about your property — outdated details can mean you're not getting a discount you qualify for." });
+    items.push({ text: "Get a quote from at least one other insurer before renewal, and compare it on coverage and deductible, not price alone." });
+  }
+
+  return Object.assign(premiumSummary(v.premium), { items: items, warning: SAVINGS_WARNING });
+}

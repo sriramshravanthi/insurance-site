@@ -51,6 +51,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
                 <option value="yes">Yes</option>
               </select>
             </div>
+            <div>
+              <label for="a-premium"
+                >Current annual premium<span class="hint"
+                  >Optional: shows potential savings opportunities to
+                  investigate</span
+                ></label
+              >
+              <input id="a-premium" inputmode="numeric" placeholder="2400" />
+            </div>
           </div>
         </fieldset>
         <fieldset>
@@ -147,6 +156,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <div>
               <label for="h-pool">Insured through a state-backed plan?</label>
               <select id="h-pool"></select>
+            </div>
+            <div>
+              <label for="h-premium"
+                >Current annual premium<span class="hint"
+                  >Optional: shows potential savings opportunities to
+                  investigate</span
+                ></label
+              >
+              <input id="h-premium" inputmode="numeric" placeholder="3000" />
             </div>
           </div>
         </fieldset>
@@ -277,6 +295,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     import {
       autoCheck,
       homeCheck,
+      savingsOpportunities,
+      money,
       AUTO,
       HOME,
       SRC,
@@ -337,7 +357,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       $("results").innerHTML = "";
     });
 
-    function render(title, flags, questions) {
+    function renderSavings(savings) {
+      if (!savings) return "";
+      let html = '<h2 id="savings-title" tabindex="-1">Potential Savings Opportunities</h2>';
+      html += `<p>Your current premium: ${money(savings.currentPremium)}/year (about ${money(savings.monthlyEquivalent)}/month).</p>`;
+      html += '<p class="lbl">Worth asking your insurer about:</p><ul class="q">';
+      savings.items.forEach((item) => {
+        html += `<li>${esc(item.text)}`;
+        if (item.sourceUrl) {
+          html += ` <span class="srcs">(<a href="${esc(item.sourceUrl)}" target="_blank" rel="noopener">${esc(item.sourceName)}</a><span class="status">Primary source</span>)</span>`;
+        }
+        html += "</li>";
+      });
+      html += "</ul>";
+      html += `<div class="callout-warning">${esc(savings.warning)}</div>`;
+      return html;
+    }
+
+    function render(title, flags, questions, savings) {
       const counts = { below: 0, gap: 0, watch: 0, info: 0, ok: 0 };
       flags.forEach((f) => counts[f.level]++);
       flags = flags.map((f, i) => ({ ...f, _i: i })).sort((a, b) => RANK[a.level] - RANK[b.level] || a._i - b._i);
@@ -365,6 +402,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         }
         html += "</article>";
       });
+      html += renderSavings(savings);
       if (questions && questions.length) {
         html += `<h2>Questions to ask your insurer</h2><ul class="q">${questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>`;
       }
@@ -389,8 +427,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         comp: $("a-comp").value,
         vehicleValue: num("a-value"),
         deductible: num("a-ded"),
+        premium: num("a-premium"),
       };
-      render("Car insurance results: " + AUTO[v.state].name, autoCheck(v), AUTO_QUESTIONS[v.state]);
+      render(
+        "Car insurance results: " + AUTO[v.state].name,
+        autoCheck(v),
+        AUTO_QUESTIONS[v.state],
+        savingsOpportunities(v, "auto")
+      );
     });
     $("form-home").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -411,8 +455,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         windPct: num("h-wind"),
         twiaArea: $("h-twia").value,
         wind: $("h-windcov").value,
+        premium: num("h-premium"),
       };
-      render("Home insurance results: " + HOME[v.state].name, homeCheck(v), HOME_QUESTIONS[v.state]);
+      render(
+        "Home insurance results: " + HOME[v.state].name,
+        homeCheck(v),
+        HOME_QUESTIONS[v.state],
+        savingsOpportunities(v, "home")
+      );
     });
   </script>
 
@@ -448,6 +498,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       padding: 12px 14px;
       border-radius: 8px;
       font-size: 0.92rem;
+    }
+    .callout-warning {
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--watch);
+      background: var(--card);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      margin: 12px 0;
     }
     .tabs {
       display: flex;

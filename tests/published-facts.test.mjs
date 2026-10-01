@@ -24,7 +24,11 @@ function readJson(fileName) {
 function exportedStateLineFiles() {
   return fs
     .readdirSync(RULES_DIR)
-    .filter((name) => name.endsWith(".json") && !["_index.json", "auto-min-limits.json"].includes(name));
+    .filter(
+      (name) =>
+        name.endsWith(".json") &&
+        !["_index.json", "auto-min-limits.json", "auto-discounts.json"].includes(name)
+    );
 }
 
 let db;

@@ -105,3 +105,35 @@ export function getRawMinLimitById(db, limitId) {
     )
     .get(limitId);
 }
+
+// discount has no v_publishable_facts-style view either — same manual filter.
+// Only Primary-source rows are ever exported, for the Coverage Gap Checker's
+// "Potential Savings Opportunities" prompts.
+export function getPrimaryDiscounts(db, jurisdictionCode) {
+  return db
+    .prepare(
+      `SELECT d.discount_id AS discountId,
+              d.name AS name,
+              d.category AS category,
+              d.availability AS availability,
+              d.last_updated AS lastVerified,
+              s.name AS sourceName,
+              s.url AS sourceUrl
+         FROM discount d
+         JOIN source s ON s.source_id = d.source_id
+        WHERE d.jurisdiction_code = ?
+          AND d.verification_status = 'Primary source'
+        ORDER BY d.discount_id`
+    )
+    .all(jurisdictionCode);
+}
+
+// Used only by the guard test, independent of the export step's own SQL.
+export function getRawDiscountById(db, discountId) {
+  return db
+    .prepare(
+      `SELECT discount_id AS discountId, verification_status AS verificationStatus
+         FROM discount WHERE discount_id = ?`
+    )
+    .get(discountId);
+}
